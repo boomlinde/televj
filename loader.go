@@ -37,9 +37,21 @@ func loadfiles(p string) map[string]anim {
 		data, err := ioutil.ReadFile(m)
 		fatal(err)
 
+		movedframe := teletext.Page{}
 		ttxframe := teletext.ConvertTTI("televj", data)
-		for i := range ttxframe {
-			ttxframe[i].SetPage(100)
+		for _, line := range ttxframe {
+			switch line.(type) {
+			case teletext.PageHeader:
+				movedframe = append(movedframe, teletext.PageHeader{
+					teletext.Header{100, line.(teletext.PageHeader).Header.Row},
+					line.(teletext.PageHeader).Title,
+				})
+			case teletext.OutputLine:
+				movedframe = append(movedframe, teletext.OutputLine{
+					teletext.Header{100, line.(teletext.OutputLine).Header.Row},
+					line.(teletext.OutputLine).Data,
+				})
+			}
 		}
 
 		key := strings.ToLower(string(name[0]))
@@ -47,7 +59,7 @@ func loadfiles(p string) map[string]anim {
 		if !ok {
 			anims[key] = anim{}
 		}
-		anims[key] = append(anims[key], frame{index, length, ttxframe.Serialize()})
+		anims[key] = append(anims[key], frame{index, length, movedframe.Serialize()})
 	}
 
 	return anims
