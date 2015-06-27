@@ -38,8 +38,8 @@ func loadfiles(p string) map[string]anim {
 		fatal(err)
 
 		ttxframe := teletext.ConvertTTI("televj", data)
-		for _, line := range ttxframe {
-			line.SetPage(100)
+		for i := range ttxframe {
+			ttxframe[i].SetPage(100)
 		}
 
 		key := strings.ToLower(string(name[0]))
