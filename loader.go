@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/boomlinde/teletext"
 	"io/ioutil"
-	"log"
 	"path"
 	"regexp"
 	"strconv"
@@ -19,7 +19,6 @@ func loadfiles(p string) map[string]anim {
 	matches := []string{}
 	for _, s := range files {
 		if matcher.MatchString(strings.ToLower(path.Base(s.Name()))) {
-			log.Println(s.Name())
 			matches = append(matches, path.Join(p, s.Name()))
 		}
 	}
@@ -38,12 +37,17 @@ func loadfiles(p string) map[string]anim {
 		data, err := ioutil.ReadFile(m)
 		fatal(err)
 
+		ttxframe := teletext.ConvertTTI("televj", data)
+		for _, line := range ttxframe {
+			line.SetPage(100)
+		}
+
 		key := strings.ToLower(string(name[0]))
 		_, ok := anims[key]
 		if !ok {
 			anims[key] = anim{}
 		}
-		anims[key] = append(anims[key], frame{index, length, data})
+		anims[key] = append(anims[key], frame{index, length, ttxframe.Serialize()})
 	}
 
 	return anims
