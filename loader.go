@@ -13,7 +13,7 @@ func loadfiles(p string) map[string]anim {
 	files, err := ioutil.ReadDir(p)
 	fatal(err)
 
-	matcher, err := regexp.Compile("[a-z][0-9]+_[0-9]+\\.tti")
+	matcher, err := regexp.Compile("[a-z][0-9]+_[0-9]+\\.ttv")
 	fatal(err)
 
 	matches := []string{}
@@ -37,29 +37,14 @@ func loadfiles(p string) map[string]anim {
 		data, err := ioutil.ReadFile(m)
 		fatal(err)
 
-		movedframe := teletext.Page{}
-		ttxframe := teletext.ConvertTTI("televj", data)
-		for _, line := range ttxframe {
-			switch line.(type) {
-			case teletext.PageHeader:
-				movedframe = append(movedframe, teletext.PageHeader{
-					teletext.Header{100, line.(teletext.PageHeader).Header.Row},
-					line.(teletext.PageHeader).Title,
-				})
-			case teletext.OutputLine:
-				movedframe = append(movedframe, teletext.OutputLine{
-					teletext.Header{100, line.(teletext.OutputLine).Header.Row},
-					line.(teletext.OutputLine).Data,
-				})
-			}
-		}
+		ttxframe := teletext.ConvertTTV("televj", 100, data)
 
 		key := strings.ToLower(string(name[0]))
 		_, ok := anims[key]
 		if !ok {
 			anims[key] = anim{}
 		}
-		anims[key] = append(anims[key], frame{index, length, movedframe.Serialize()})
+		anims[key] = append(anims[key], frame{index, length, ttxframe.Serialize()})
 	}
 
 	return anims
